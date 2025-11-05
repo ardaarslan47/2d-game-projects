@@ -15,6 +15,7 @@ signal fired
 @export var projectile_count: int = 1
 @export var spread_angle: float = 0.0  # In degrees
 @export var pierce_count: int = 0
+@export var weapon_range: float = 300.0  # Maximum range to target enemies
 @export var projectile_scene: PackedScene
 
 # Private variables
@@ -65,9 +66,12 @@ func upgrade_fire_rate(multiplier: float) -> void:
 func upgrade_projectile_count(amount: int) -> void:
 	projectile_count += amount
 
+func upgrade_range(amount: float) -> void:
+	weapon_range += amount
+
 # Private methods
 func _find_target_direction() -> Vector2:
-	# Find nearest enemy
+	# Find nearest enemy within weapon range
 	var enemies: Array[Node] = get_tree().get_nodes_in_group("enemies")
 	if enemies.is_empty():
 		return Vector2.ZERO
@@ -85,7 +89,9 @@ func _find_target_direction() -> Vector2:
 		if not is_instance_valid(enemy):
 			continue
 		var distance: float = player_pos.distance_to(enemy.global_position)
-		if distance < nearest_distance:
+
+		# Only consider enemies within weapon range
+		if distance <= weapon_range and distance < nearest_distance:
 			nearest_distance = distance
 			nearest_enemy = enemy
 

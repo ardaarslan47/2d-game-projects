@@ -9,8 +9,9 @@ func _ready() -> void:
 
 	weapon_name = "Rusty Pistol"
 	damage = 10
-	fire_rate = 2.0  # 2 shots per second
+	fire_rate = 1.0  # 1 shot per second
 	projectile_speed = 500.0
 	projectile_count = 1
 	spread_angle = 0.0
 	pierce_count = 0
+	weapon_range = 250.0  # Medium range weapon
