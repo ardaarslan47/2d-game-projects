@@ -67,3 +67,6 @@ Temporary Items
 # User-specific settings
 override.cfg
 .mono/
+
+# Claude
+CLAUDE.md

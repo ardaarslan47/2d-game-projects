@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=3 uid="uid://c5vxqj8yw6hbn"]
+
+[ext_resource type="PackedScene" uid="uid://bwfp2yx6qpojy" path="res://scenes/characters/player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="2_spawner"]
+[ext_resource type="PackedScene" uid="uid://e8vxqj8yw6hbn" path="res://scenes/ui/hud.tscn" id="3_hud"]
+
+[node name="Game" type="Node2D"]
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(640, 360)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+zoom = Vector2(2, 2)
+
+[node name="Background" type="ColorRect" parent="."]
+offset_left = -1000.0
+offset_top = -1000.0
+offset_right = 2000.0
+offset_bottom = 2000.0
+color = Color(0.2, 0.2, 0.2, 1)
+z_index = -100
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("2_spawner")
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
