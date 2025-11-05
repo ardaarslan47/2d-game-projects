@@ -1,0 +1,67 @@
+[gd_resource type="SpriteFrames" load_steps=10 format=3 uid="uid://bsc1yaewyw3vq"]
+
+[ext_resource type="Texture2D" uid="uid://cr8pq43mo004j" path="res://assets/characters/zombie/Zombie.png" id="1_jdk6y"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b4tjc"]
+atlas = ExtResource("1_jdk6y")
+region = Rect2(0, 0, 40, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7m0si"]
+atlas = ExtResource("1_jdk6y")
+region = Rect2(40, 0, 40, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8jni4"]
+atlas = ExtResource("1_jdk6y")
+region = Rect2(80, 0, 40, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gy3xh"]
+atlas = ExtResource("1_jdk6y")
+region = Rect2(0, 40, 40, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v1t5k"]
+atlas = ExtResource("1_jdk6y")
+region = Rect2(40, 40, 40, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gtn7h"]
+atlas = ExtResource("1_jdk6y")
+region = Rect2(80, 40, 40, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8picw"]
+atlas = ExtResource("1_jdk6y")
+region = Rect2(0, 80, 40, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v27w1"]
+atlas = ExtResource("1_jdk6y")
+region = Rect2(40, 80, 40, 40)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b4tjc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7m0si")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8jni4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gy3xh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v1t5k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gtn7h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8picw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v27w1")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
