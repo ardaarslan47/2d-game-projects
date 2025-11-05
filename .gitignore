@@ -1,0 +1,69 @@
+# Godot 4+ specific ignores
+.godot/
+.import/
+
+# Godot-specific
+*.translation
+*.import
+*.md5
+
+# Mono-specific (if using C#)
+.mono/
+data_*/
+mono_crash.*.json
+
+# Build artifacts
+builds/
+build/
+bin/
+obj/
+
+# Export presets
+export_presets.cfg
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# OS-specific files (macOS)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# macOS system files
+Icon?
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Editor-specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.gho
+*.ori
+*.orig
+*.tmp
+
+# User-specific settings
+override.cfg
+.mono/
