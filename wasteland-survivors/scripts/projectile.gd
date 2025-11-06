@@ -29,7 +29,8 @@ func _ready() -> void:
 	lifetime_timer.timeout.connect(_on_lifetime_timeout)
 	lifetime_timer.start()
 
-	# Connect collision
+	# Connect both collision signals for maximum compatibility
+	# Area2D projectile can collide with enemy Area2D (Hitbox) or CharacterBody2D
 	area_entered.connect(_on_area_entered)
 	body_entered.connect(_on_body_entered)
 
@@ -52,13 +53,13 @@ func setup(start_pos: Vector2, dir: Vector2, dmg: int = 10) -> void:
 
 # Private methods
 func _on_area_entered(area: Area2D) -> void:
-	# Check if it's an enemy
+	# Enemy hitbox is Area2D child of CharacterBody2D enemy
 	var parent := area.get_parent()
 	if parent and parent.is_in_group("enemies"):
 		_hit_enemy(parent)
 
 func _on_body_entered(body: Node2D) -> void:
-	# Check if it's an enemy
+	# Direct collision with enemy CharacterBody2D
 	if body.is_in_group("enemies"):
 		_hit_enemy(body)
 
@@ -73,7 +74,7 @@ func _hit_enemy(enemy: Node) -> void:
 	if enemy.has_method("take_damage"):
 		enemy.take_damage(damage)
 
-	# Check pierce
+	# Check pierce count
 	_pierced_enemies += 1
 	if _pierced_enemies > pierce_count:
 		queue_free()

@@ -9,7 +9,6 @@ signal health_changed(new_health: int, max_health: int)
 signal died
 
 # Exported variables
-@export var max_health: int = 100
 @export var move_speed: float = 100.0
 @export var acceleration: float = 2000.0
 @export var friction: float = 1500.0
@@ -17,8 +16,6 @@ signal died
 @export var knockback_force: float = 200.0  # Knockback strength
 
 # Public variables
-var current_health: int = max_health
-var is_alive: bool = true
 var is_invincible: bool = false
 
 # Private variables
@@ -32,20 +29,25 @@ var _hit_effect_tween: Tween
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
 @onready var weapon_manager: WeaponManager = $WeaponManager
+@onready var health_component: HealthComponent = $HealthComponent
 
 # Current direction for animation
-var _current_animation: String = "south"
+var _current_animation: String = GameConstants.PLAYER_DEFAULT_ANIMATION
 
 func _ready() -> void:
-	current_health = max_health
 	add_to_group("player")
-	health_changed.emit(current_health, max_health)
+
+	# Connect HealthComponent signals
+	health_component.health_changed.connect(_on_health_changed)
+	health_component.died.connect(_on_health_died)
+
+	# Emit initial health state
+	health_changed.emit(health_component.current_health, health_component.max_health)
 
 	# Store original sprite modulate for restoration after hit effects
 	_original_modulate = sprite.modulate
 
 	# Set initial animation
-	_current_animation = "down"
 	sprite.animation = _current_animation
 	sprite.frame = 0
 	sprite.stop()
@@ -54,7 +56,7 @@ func _ready() -> void:
 	weapon_manager.add_weapon_by_name("Rusty Pistol")
 
 func _physics_process(delta: float) -> void:
-	if not is_alive:
+	if not health_component.is_alive:
 		return
 
 	# Handle invincibility timer
@@ -76,36 +78,17 @@ func _physics_process(delta: float) -> void:
 
 # Public methods
 func take_damage(amount: int, attacker_position: Vector2 = global_position) -> void:
-	if not is_alive or is_invincible:
+	if not health_component.is_alive or is_invincible:
 		return
 
-	current_health -= amount
-	current_health = max(0, current_health)
-	health_changed.emit(current_health, max_health)
+	# Delegate damage to HealthComponent
+	health_component.take_damage(amount)
 
-	# Apply hit effects
+	# Apply hit effects (knockback and visuals)
 	_apply_hit_effects(attacker_position)
 
-	if current_health <= 0:
-		die()
-
 func heal(amount: int) -> void:
-	if not is_alive:
-		return
-
-	current_health += amount
-	current_health = min(current_health, max_health)
-	health_changed.emit(current_health, max_health)
-
-func die() -> void:
-	if not is_alive:
-		return
-
-	is_alive = false
-	died.emit()
-	# TODO: Play death animation
-	# TODO: Disable collision
-	print("Player died!")
+	health_component.heal(amount)
 
 # Private methods
 func _handle_input() -> void:
@@ -131,10 +114,10 @@ func _handle_movement(delta: float) -> void:
 		# Apply friction when not moving
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 
-		# Stop animation and show first frame when idle
+		# Stop animation and show idle frame
 		if sprite.is_playing():
 			sprite.stop()
-			sprite.frame = 3
+			sprite.frame = GameConstants.PLAYER_IDLE_FRAME
 
 	move_and_slide()
 
@@ -148,7 +131,7 @@ func _update_sprite_direction(direction: Vector2) -> void:
 
 	# Prioritize vertical movement only if it's significantly stronger than horizontal
 	# This makes diagonal movement use side animation
-	if abs_y > abs_x * 1.5:  # Vertical must be 1.5x stronger to dominate
+	if abs_y > abs_x * GameConstants.PLAYER_VERTICAL_DOMINANCE:
 		if direction.y < 0:
 			new_animation = "up"
 			new_flip = false
@@ -186,14 +169,24 @@ func _start_hit_visual_effects() -> void:
 		_hit_effect_tween.kill()
 
 	# Red flash effect
-	sprite.modulate = Color(1, 0.3, 0.3, 0.5)  # Red and half transparent
+	sprite.modulate = GameConstants.PLAYER_HIT_FLASH_COLOR
 
 	# Create a tween for blinking effect during invincibility
 	_hit_effect_tween = create_tween()
-	_hit_effect_tween.set_loops(int(invincibility_duration * 5))  # Blink 5 times per second
+	_hit_effect_tween.set_loops(int(invincibility_duration * GameConstants.PLAYER_BLINK_RATE))
 
 	# Blink between half opacity and more transparent (only affect alpha, keep red color)
-	_hit_effect_tween.tween_property(sprite, "modulate:a", 0.3, 0.1)
-	_hit_effect_tween.tween_property(sprite, "modulate:a", 0.5, 0.1)
+	_hit_effect_tween.tween_property(sprite, "modulate:a", GameConstants.PLAYER_HIT_FLASH_ALPHA_MIN, GameConstants.PLAYER_HIT_FLASH_TWEEN_DURATION)
+	_hit_effect_tween.tween_property(sprite, "modulate:a", GameConstants.PLAYER_HIT_FLASH_ALPHA_MAX, GameConstants.PLAYER_HIT_FLASH_TWEEN_DURATION)
 
 	# The _physics_process timer will handle stopping the tween and restoring appearance
+
+# Signal handlers
+func _on_health_changed(current: int, maximum: int) -> void:
+	health_changed.emit(current, maximum)
+
+func _on_health_died() -> void:
+	died.emit()
+	# TODO: Play death animation
+	# TODO: Disable collision
+	print("Player died!")

@@ -8,12 +8,22 @@ extends Node
 signal weapon_added(weapon: WeaponBase)
 signal weapon_removed(weapon: WeaponBase)
 
+# Exported variables
+@export var weapon_registry: WeaponRegistry
+
 # Public variables
 var active_weapons: Array[WeaponBase] = []
+
+func _ready() -> void:
+	# Create default registry if not set
+	if not weapon_registry:
+		weapon_registry = WeaponRegistry.new()
 
 # Public methods
 func add_weapon(weapon_script: Script) -> WeaponBase:
 	var weapon: WeaponBase = weapon_script.new()
+	# Set owner_node before adding to tree (before _ready() is called)
+	weapon.owner_node = get_parent()
 	add_child(weapon)
 	active_weapons.append(weapon)
 	weapon_added.emit(weapon)
@@ -45,8 +55,4 @@ func get_weapon(weapon_name: String) -> WeaponBase:
 
 # Private methods
 func _get_weapon_script(weapon_name: String) -> Script:
-	match weapon_name:
-		"Rusty Pistol":
-			return load("res://scripts/weapons/weapon_pistol.gd")
-		_:
-			return null
+	return weapon_registry.get_weapon_script(weapon_name)

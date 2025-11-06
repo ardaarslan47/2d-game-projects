@@ -18,11 +18,17 @@ signal fired
 @export var weapon_range: float = 300.0  # Maximum range to target enemies
 @export var projectile_scene: PackedScene
 
+# Public variables
+var owner_node: Node2D  # Set by WeaponManager when weapon is added
+
 # Private variables
 var _fire_cooldown: float = 0.0
 var _can_fire: bool = true
 
 func _ready() -> void:
+	# Validate owner_node is set
+	assert(owner_node != null, "WeaponBase: owner_node must be set by WeaponManager before _ready()")
+
 	if not projectile_scene:
 		# Default projectile
 		projectile_scene = load("res://scenes/weapons/projectile.tscn")
@@ -72,23 +78,16 @@ func upgrade_range(amount: float) -> void:
 # Private methods
 func _find_target_direction() -> Vector2:
 	# Find nearest enemy within weapon range
-	var enemies: Array[Node] = get_tree().get_nodes_in_group("enemies")
-	if enemies.is_empty():
+	var enemies: Array[Node] = NodeUtils.get_valid_nodes_in_group(get_tree(), "enemies")
+	if enemies.is_empty() or not owner_node:
 		return Vector2.ZERO
 
-	# Get player position (WeaponManager's parent is the Player)
-	var player: Node2D = get_parent().get_parent() as Node2D
-	if not player:
-		return Vector2.ZERO
-
-	var player_pos: Vector2 = player.global_position
+	var owner_pos: Vector2 = owner_node.global_position
 	var nearest_enemy: Node = null
 	var nearest_distance: float = INF
 
 	for enemy in enemies:
-		if not is_instance_valid(enemy):
-			continue
-		var distance: float = player_pos.distance_to(enemy.global_position)
+		var distance: float = owner_pos.distance_to(enemy.global_position)
 
 		# Only consider enemies within weapon range
 		if distance <= weapon_range and distance < nearest_distance:
@@ -96,17 +95,12 @@ func _find_target_direction() -> Vector2:
 			nearest_enemy = enemy
 
 	if nearest_enemy:
-		return player_pos.direction_to(nearest_enemy.global_position)
+		return owner_pos.direction_to(nearest_enemy.global_position)
 
 	return Vector2.ZERO
 
 func _spawn_projectile(base_direction: Vector2, index: int) -> void:
-	if not projectile_scene:
-		return
-
-	# Get player position
-	var player: Node2D = get_parent().get_parent() as Node2D
-	if not player:
+	if not projectile_scene or not owner_node:
 		return
 
 	var projectile: Projectile = projectile_scene.instantiate()
@@ -123,6 +117,6 @@ func _spawn_projectile(base_direction: Vector2, index: int) -> void:
 	get_tree().current_scene.add_child(projectile)
 
 	# Setup projectile
-	projectile.setup(player.global_position, direction, damage)
+	projectile.setup(owner_node.global_position, direction, damage)
 	projectile.speed = projectile_speed
 	projectile.pierce_count = pierce_count

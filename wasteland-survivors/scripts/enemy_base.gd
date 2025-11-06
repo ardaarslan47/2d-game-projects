@@ -8,14 +8,11 @@ extends CharacterBody2D
 signal died
 
 # Exported variables
-@export var max_health: int = 30
 @export var move_speed: float = 80.0
 @export var damage: int = 10
 @export var attack_cooldown: float = 1.0
 
 # Public variables
-var current_health: int = max_health
-var is_alive: bool = true
 var player: Node2D = null
 
 # Private variables
@@ -25,15 +22,16 @@ var _attack_timer: float = 0.0
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
 @onready var hitbox: Area2D = $Hitbox
+@onready var health_component: HealthComponent = $HealthComponent
 
 func _ready() -> void:
-	current_health = max_health
 	add_to_group("enemies")
 
-	# Find player
-	var players := get_tree().get_nodes_in_group("player")
-	if not players.is_empty():
-		player = players[0]
+	# Connect HealthComponent signals
+	health_component.died.connect(_on_health_died)
+
+	# Find player using utility
+	player = NodeUtils.get_first_in_group(get_tree(), "player")
 
 	# Play walk animation if it exists
 	if sprite and sprite.sprite_frames.has_animation("walk"):
@@ -44,7 +42,7 @@ func _ready() -> void:
 		hitbox.body_entered.connect(_on_hitbox_body_entered)
 
 func _physics_process(delta: float) -> void:
-	if not is_alive:
+	if not health_component.is_alive:
 		return
 
 	# Update attack timer
@@ -52,33 +50,19 @@ func _physics_process(delta: float) -> void:
 		_attack_timer -= delta
 
 	# Chase player
-	if player and is_instance_valid(player):
+	if NodeUtils.is_valid(player):
 		_chase_player(delta)
 
 # Public methods
 func take_damage(amount: int) -> void:
-	if not is_alive:
+	if not health_component.is_alive:
 		return
 
-	current_health -= amount
+	# Delegate damage to HealthComponent
+	health_component.take_damage(amount)
 
 	# Visual feedback (flash red)
 	_flash_damage()
-
-	if current_health <= 0:
-		die()
-
-func die() -> void:
-	if not is_alive:
-		return
-
-	is_alive = false
-	died.emit()
-
-	# TODO: Drop XP
-	# TODO: Play death animation
-
-	queue_free()
 
 # Private methods
 func _chase_player(delta: float) -> void:
@@ -122,7 +106,14 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 func _flash_damage() -> void:
 	# Simple damage feedback - change color briefly
 	if sprite:
-		sprite.modulate = Color(1, 0.5, 0.5)
-		await get_tree().create_timer(0.1).timeout
-		if is_instance_valid(self) and sprite:
+		sprite.modulate = GameConstants.ENEMY_HIT_FLASH_COLOR
+		await get_tree().create_timer(GameConstants.ENEMY_HIT_FLASH_DURATION).timeout
+		if NodeUtils.is_valid(self) and sprite:
 			sprite.modulate = Color(1, 1, 1)
+
+# Signal handlers
+func _on_health_died() -> void:
+	died.emit()
+	# TODO: Drop XP
+	# TODO: Play death animation
+	queue_free()
