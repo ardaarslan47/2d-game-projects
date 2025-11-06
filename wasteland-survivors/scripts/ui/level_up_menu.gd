@@ -58,6 +58,11 @@ var _upgrade_options: Array[Dictionary] = []
 func _ready() -> void:
 	hide()
 
+	# Connect hover effects to buttons
+	_setup_button_hover_effects(button_1)
+	_setup_button_hover_effects(button_2)
+	_setup_button_hover_effects(button_3)
+
 ## Show the level-up menu and pause the game.
 func show_menu() -> void:
 	_generate_upgrade_options()
@@ -144,3 +149,8 @@ func _on_penetration_button_pressed() -> void:
 	if _upgrade_options.size() > 2:
 		upgrade_selected.emit(_upgrade_options[2])
 	hide_menu()
+
+func _setup_button_hover_effects(button: Button) -> void:
+	"""Add hover effects to a button - brighten on hover, normal on exit."""
+	button.mouse_entered.connect(func(): button.modulate = Color(1.2, 1.2, 1.2))
+	button.mouse_exited.connect(func(): button.modulate = Color(1.0, 1.0, 1.0))

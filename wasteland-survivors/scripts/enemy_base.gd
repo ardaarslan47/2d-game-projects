@@ -85,6 +85,7 @@ func reset_state() -> void:
 	# Reset sprite
 	if sprite:
 		sprite.modulate = Color(1, 1, 1)
+		sprite.scale = Vector2(1, 1)  # Reset scale after death animation
 		sprite.flip_h = false
 		if sprite.sprite_frames.has_animation("walk"):
 			sprite.play("walk")
@@ -152,8 +153,15 @@ func _flash_damage() -> void:
 func _on_health_died() -> void:
 	died.emit()
 	_drop_xp()
-	# TODO: Play death animation
-	_return_to_pool()
+
+	# Play death animation - fade out and scale down
+	var death_tween: Tween = create_tween()
+	death_tween.set_parallel(true)  # Run both tweens at the same time
+	death_tween.tween_property(sprite, "modulate:a", 0.0, 0.3)
+	death_tween.tween_property(sprite, "scale", Vector2(0.5, 0.5), 0.3)
+
+	# After animation completes, return to pool
+	death_tween.tween_callback(_return_to_pool)
 
 func _return_to_pool() -> void:
 	"""Return this enemy to the pool, or free it if no pool is set."""

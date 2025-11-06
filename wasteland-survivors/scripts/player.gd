@@ -279,6 +279,17 @@ func _on_health_changed(current: int, maximum: int) -> void:
 
 func _on_health_died() -> void:
 	died.emit()
-	# TODO: Play death animation
-	# TODO: Disable collision
+
+	# Disable collision so player becomes intangible
+	collision.set_deferred("disabled", true)
+
+	# Stop any hit effect tweens
+	if _hit_effect_tween:
+		_hit_effect_tween.kill()
+		_hit_effect_tween = null
+
+	# Fade out player sprite
+	var death_tween: Tween = create_tween()
+	death_tween.tween_property(sprite, "modulate:a", 0.0, 0.5)
+
 	print("Player died!")
