@@ -33,6 +33,17 @@ const PROP_MIN_NOISE_VALUE: float = 0.4  # Only spawn props above this noise thr
 
 # Difficulty Scaling
 const BASE_ENEMY_HEALTH: int = 10  # Starting health at game start
-const HEALTH_PER_MINUTE: int = 5  # Health increase per minute of gameplay
-const MAX_ENEMY_HEALTH: int = 200  # Maximum cap on enemy health
 const DIFFICULTY_INTERVAL: float = 60.0  # Seconds between difficulty level increases
+
+# Exponential Health Scaling (power function: base * (1 + time)^exponent)
+const HEALTH_SCALE_EXPONENT: float = 1.5  # Power function exponent for exponential growth
+
+# Spawn Rate Scaling (exponential: base * growth^(time/interval))
+const SPAWN_RATE_GROWTH: float = 1.05  # 5% increase per interval
+const SPAWN_RATE_INTERVAL: float = 30.0  # Apply growth every 30 seconds
+const MAX_SPAWN_RATE_MULTIPLIER: float = 5.0  # Cap at 5x spawn rate for performance
+
+# Movement Speed Scaling (linear steps: base * (1 + growth * intervals_passed))
+const SPEED_GROWTH_INTERVAL: float = 120.0  # Apply growth every 2 minutes (120 seconds)
+const SPEED_GROWTH_PER_INTERVAL: float = 0.10  # 10% increase per interval
+const MAX_SPEED_MULTIPLIER: float = 2.0  # Cap at 2x speed to prevent teleporting

@@ -6,7 +6,7 @@
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gl10n"]
 radius = 8.0
-height = 38.0
+height = 36.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hitbox"]
 height = 40.0

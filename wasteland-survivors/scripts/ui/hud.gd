@@ -8,6 +8,9 @@ extends CanvasLayer
 @onready var health_label: Label = $MarginContainer/VBoxContainer/HealthBar/HealthLabel
 @onready var timer_label: Label = $MarginContainer/VBoxContainer/TimerLabel
 @onready var kill_label: Label = $MarginContainer/VBoxContainer/KillLabel
+@onready var level_label: Label = $MarginContainer/VBoxContainer/LevelLabel
+@onready var xp_bar: ProgressBar = $MarginContainer/VBoxContainer/XPBar
+@onready var xp_label: Label = $MarginContainer/VBoxContainer/XPBar/XPLabel
 
 # Private variables
 var _game_time: float = 0.0
@@ -18,6 +21,8 @@ func _ready() -> void:
 	var player := get_tree().get_first_node_in_group("player")
 	if player:
 		player.health_changed.connect(_on_player_health_changed)
+		player.xp_changed.connect(_on_player_xp_changed)
+		player.level_up.connect(_on_player_level_up)
 
 	# Connect to enemies
 	get_tree().node_added.connect(_on_node_added)
@@ -44,6 +49,14 @@ func _update_timer() -> void:
 
 func _update_kills() -> void:
 	kill_label.text = "Kills: %d" % _kill_count
+
+func _on_player_xp_changed(current_xp: int, xp_to_next_level: int) -> void:
+	xp_bar.max_value = xp_to_next_level
+	xp_bar.value = current_xp
+	xp_label.text = "%d / %d" % [current_xp, xp_to_next_level]
+
+func _on_player_level_up(new_level: int) -> void:
+	level_label.text = "Level: %d" % new_level
 
 func _on_node_added(node: Node) -> void:
 	if node.is_in_group("enemies"):

@@ -3,6 +3,7 @@ extends CharacterBody2D
 
 ## Base enemy class with chase AI and health system.
 ## All enemies inherit from this class.
+## Supports object pooling for performance.
 
 # Signals
 signal died
@@ -11,12 +12,15 @@ signal died
 @export var move_speed: float = 80.0
 @export var damage: int = 10
 @export var attack_cooldown: float = 1.0
+@export var xp_drop_amount: int = 20
+@export var xp_shard_scene: PackedScene
 
 # Public variables
 var player: Node2D = null
 
 # Private variables
 var _attack_timer: float = 0.0
+var _pool: EnemyPool = null  # Reference to object pool
 
 # Onready variables
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
@@ -63,6 +67,39 @@ func take_damage(amount: int) -> void:
 
 	# Visual feedback (flash red)
 	_flash_damage()
+
+func set_pool(pool: EnemyPool) -> void:
+	"""Set the object pool reference (called by EnemyPool)."""
+	_pool = pool
+
+func reset_state() -> void:
+	"""Reset enemy state when pulling from pool."""
+	_attack_timer = 0.0
+	velocity = Vector2.ZERO
+
+	# Reset health to max AND revive (is_alive flag)
+	if health_component:
+		health_component.current_health = health_component.max_health
+		health_component.is_alive = true  # CRITICAL: Revive the enemy!
+
+	# Reset sprite
+	if sprite:
+		sprite.modulate = Color(1, 1, 1)
+		sprite.flip_h = false
+		if sprite.sprite_frames.has_animation("walk"):
+			sprite.play("walk")
+
+	# Re-enable collision (use set_deferred to match how we disable it)
+	if collision:
+		collision.set_deferred("disabled", false)
+
+	# Re-enable hitbox
+	if hitbox:
+		hitbox.set_deferred("monitoring", true)
+		hitbox.set_deferred("monitorable", true)
+
+	# Find player reference
+	player = NodeUtils.get_first_in_group(get_tree(), "player")
 
 # Private methods
 func _chase_player(delta: float) -> void:
@@ -114,6 +151,28 @@ func _flash_damage() -> void:
 # Signal handlers
 func _on_health_died() -> void:
 	died.emit()
-	# TODO: Drop XP
+	_drop_xp()
 	# TODO: Play death animation
-	queue_free()
+	_return_to_pool()
+
+func _return_to_pool() -> void:
+	"""Return this enemy to the pool, or free it if no pool is set."""
+	if _pool:
+		_pool.return_enemy(self)
+	else:
+		# No pool set, fall back to regular cleanup
+		queue_free()
+
+func _drop_xp() -> void:
+	"""Drop XP shard at enemy position."""
+	if not xp_shard_scene:
+		# Load default XP shard if not set
+		xp_shard_scene = preload("res://scenes/pickups/xp_shard.tscn")
+
+	if xp_shard_scene:
+		var xp_shard: XPShard = xp_shard_scene.instantiate()
+		xp_shard.global_position = global_position
+		xp_shard.xp_value = xp_drop_amount
+
+		# Add to the same parent as the enemy (the game scene)
+		get_parent().call_deferred("add_child", xp_shard)

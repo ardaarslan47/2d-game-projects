@@ -10,6 +10,7 @@ signal weapon_removed(weapon: WeaponBase)
 
 # Exported variables
 @export var weapon_registry: WeaponRegistry
+@export var projectile_pool: ProjectilePool  # Optional: Set to use object pooling for all weapons
 
 # Public variables
 var active_weapons: Array[WeaponBase] = []
@@ -24,6 +25,9 @@ func add_weapon(weapon_script: Script) -> WeaponBase:
 	var weapon: WeaponBase = weapon_script.new()
 	# Set owner_node before adding to tree (before _ready() is called)
 	weapon.owner_node = get_parent()
+	# Set projectile pool if available
+	if projectile_pool:
+		weapon.projectile_pool = projectile_pool
 	add_child(weapon)
 	active_weapons.append(weapon)
 	weapon_added.emit(weapon)

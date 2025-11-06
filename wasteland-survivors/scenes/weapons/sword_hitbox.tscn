@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwc8yr5v2p7xm"]
+
+[ext_resource type="Script" path="res://scripts/sword_hitbox.gd" id="1_sword_hitbox"]
+
+[node name="SwordHitbox" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_sword_hitbox")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+
+[node name="VisualPolygon" type="Polygon2D" parent="."]
+color = Color(0.3, 0.5, 1, 0.4)

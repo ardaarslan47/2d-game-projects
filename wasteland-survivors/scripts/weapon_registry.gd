@@ -6,7 +6,8 @@ extends Resource
 
 # Map of weapon names to script paths
 @export var weapons: Dictionary = {
-	"Rusty Pistol": "res://scripts/weapons/weapon_pistol.gd"
+	"Rusty Pistol": "res://scripts/weapons/weapon_pistol.gd",
+	"Rusty Sword": "res://scripts/weapons/weapon_sword.gd"
 }
 
 ## Get weapon script by name.
