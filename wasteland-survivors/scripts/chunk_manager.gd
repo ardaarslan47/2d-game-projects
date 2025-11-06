@@ -8,12 +8,6 @@ extends Node2D
 signal chunk_loaded(chunk_pos: Vector2i)
 signal chunk_unloaded(chunk_pos: Vector2i)
 
-# Constants
-const CHUNK_SIZE: int = 16  # Tiles per chunk (16x16)
-const TILE_SIZE: int = 16   # Pixels per tile
-const LOAD_RADIUS: int = 2  # Load chunks within this radius
-const UNLOAD_RADIUS: int = 3  # Unload chunks beyond this radius
-
 # Exported variables
 @export var tilemap: TileMap
 @export var player: Node2D
@@ -23,14 +17,13 @@ const UNLOAD_RADIUS: int = 3  # Unload chunks beyond this radius
 var _loaded_chunks: Dictionary = {}  # Vector2i -> bool
 var _last_player_chunk: Vector2i = Vector2i.ZERO
 var _update_timer: float = 0.0
-const UPDATE_INTERVAL: float = 0.5  # Check every 0.5 seconds
 
 func _ready() -> void:
 	if player == null:
-		player = get_tree().get_first_node_in_group("player")
+		player = NodeUtils.get_first_in_group(get_tree(), "player")
 
 	if player == null:
-		push_error("ChunkManager: No player found!")
+		push_error("ChunkManager: No player found in scene!")
 		return
 
 	# Auto-find children if not set
@@ -43,7 +36,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_update_timer += delta
 
-	if _update_timer >= UPDATE_INTERVAL:
+	if _update_timer >= GameConstants.CHUNK_UPDATE_INTERVAL:
 		_update_timer = 0.0
 		_update_chunks()
 
@@ -66,8 +59,8 @@ func _update_chunks() -> void:
 	_unload_distant_chunks(current_chunk)
 
 func _load_chunks_around(center_chunk: Vector2i) -> void:
-	for x in range(-LOAD_RADIUS, LOAD_RADIUS + 1):
-		for y in range(-LOAD_RADIUS, LOAD_RADIUS + 1):
+	for x in range(-GameConstants.CHUNK_LOAD_RADIUS, GameConstants.CHUNK_LOAD_RADIUS + 1):
+		for y in range(-GameConstants.CHUNK_LOAD_RADIUS, GameConstants.CHUNK_LOAD_RADIUS + 1):
 			var chunk_pos: Vector2i = center_chunk + Vector2i(x, y)
 
 			if not _loaded_chunks.has(chunk_pos):
@@ -82,7 +75,7 @@ func _load_chunk(chunk_pos: Vector2i) -> void:
 
 	# Generate terrain for this chunk
 	if terrain_generator:
-		terrain_generator.generate_chunk(tilemap, chunk_pos, CHUNK_SIZE)
+		terrain_generator.generate_chunk(tilemap, chunk_pos, GameConstants.CHUNK_SIZE)
 
 	chunk_loaded.emit(chunk_pos)
 
@@ -96,7 +89,7 @@ func _unload_distant_chunks(center_chunk: Vector2i) -> void:
 			abs(chunk_pos.y - center_chunk.y)
 		)
 
-		if distance > UNLOAD_RADIUS:
+		if distance > GameConstants.CHUNK_UNLOAD_RADIUS:
 			chunks_to_unload.append(chunk_pos)
 
 	# Unload them
@@ -108,10 +101,10 @@ func _unload_chunk(chunk_pos: Vector2i) -> void:
 		return
 
 	# Remove tiles in this chunk
-	var start_tile: Vector2i = chunk_pos * CHUNK_SIZE
+	var start_tile: Vector2i = chunk_pos * GameConstants.CHUNK_SIZE
 
-	for x in range(CHUNK_SIZE):
-		for y in range(CHUNK_SIZE):
+	for x in range(GameConstants.CHUNK_SIZE):
+		for y in range(GameConstants.CHUNK_SIZE):
 			var tile_pos: Vector2i = start_tile + Vector2i(x, y)
 			tilemap.erase_cell(0, tile_pos)  # Layer 0
 
@@ -122,13 +115,13 @@ func _unload_chunk(chunk_pos: Vector2i) -> void:
 
 func _world_to_chunk(world_pos: Vector2) -> Vector2i:
 	var tile_pos: Vector2i = Vector2i(
-		int(floor(world_pos.x / TILE_SIZE)),
-		int(floor(world_pos.y / TILE_SIZE))
+		int(floor(world_pos.x / GameConstants.CHUNK_TILE_SIZE)),
+		int(floor(world_pos.y / GameConstants.CHUNK_TILE_SIZE))
 	)
 
 	return Vector2i(
-		int(floor(float(tile_pos.x) / CHUNK_SIZE)),
-		int(floor(float(tile_pos.y) / CHUNK_SIZE))
+		int(floor(float(tile_pos.x) / GameConstants.CHUNK_SIZE)),
+		int(floor(float(tile_pos.y) / GameConstants.CHUNK_SIZE))
 	)
 
 func get_loaded_chunk_count() -> int:

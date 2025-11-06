@@ -12,30 +12,53 @@ signal fired
 @export var damage: int = 10
 @export var fire_rate: float = 1.0  # Shots per second
 @export var projectile_speed: float = 400.0
-@export var projectile_count: int = 1
-@export var spread_angle: float = 0.0  # In degrees
+@export var projectile_count: int = 1  # Number of different targets to shoot at once
+@export var multi_shot_delay: float = 0.05  # Delay between each shot in multi-shot
 @export var pierce_count: int = 0
 @export var weapon_range: float = 300.0  # Maximum range to target enemies
 @export var projectile_scene: PackedScene
+@export var projectile_size_multiplier: float = 1.0  # Size multiplier for projectiles
+@export var projectile_pool: ProjectilePool  # Object pool for projectiles (optional, improves performance)
+
+# Public variables
+var owner_node: Node2D  # Set by WeaponManager when weapon is added
+
+# Upgrade multipliers (set by player)
+var fire_rate_multiplier: float = 1.0
+var damage_multiplier: float = 1.0
+var pierce_bonus: int = 0
 
 # Private variables
 var _fire_cooldown: float = 0.0
 var _can_fire: bool = true
+var _multi_shot_queue: Array[Vector2] = []  # Queue of target directions for multi-shot
+var _multi_shot_timer: float = 0.0
 
 func _ready() -> void:
+	# Validate owner_node is set
+	assert(owner_node != null, "WeaponBase: owner_node must be set by WeaponManager before _ready()")
+
 	if not projectile_scene:
 		# Default projectile
 		projectile_scene = load("res://scenes/weapons/projectile.tscn")
 
 func _process(delta: float) -> void:
-	# Handle cooldown
+	# Handle fire cooldown
 	if _fire_cooldown > 0:
 		_fire_cooldown -= delta
 		if _fire_cooldown <= 0:
 			_can_fire = true
 
-	# Auto-fire if enabled
-	if _can_fire:
+	# Handle multi-shot queue
+	if _multi_shot_queue.size() > 0:
+		_multi_shot_timer -= delta
+		if _multi_shot_timer <= 0:
+			var direction: Vector2 = _multi_shot_queue.pop_front()
+			_spawn_projectile(direction, 0)
+			_multi_shot_timer = multi_shot_delay
+
+	# Auto-fire if enabled and queue is empty
+	if _can_fire and _multi_shot_queue.is_empty():
 		fire()
 
 # Public methods
@@ -44,16 +67,17 @@ func fire() -> void:
 		return
 
 	_can_fire = false
-	_fire_cooldown = 1.0 / fire_rate
+	# Apply fire rate multiplier
+	_fire_cooldown = 1.0 / (fire_rate * fire_rate_multiplier)
 
-	# Find nearest enemy
-	var target_direction: Vector2 = _find_target_direction()
-	if target_direction == Vector2.ZERO:
-		return  # No target found
+	# Find multiple target directions (one per projectile_count)
+	var target_directions: Array[Vector2] = _find_multiple_target_directions(projectile_count)
+	if target_directions.is_empty():
+		return  # No targets found
 
-	# Spawn projectiles
-	for i in range(projectile_count):
-		_spawn_projectile(target_direction, i)
+	# Queue up the shots with delays
+	_multi_shot_queue = target_directions.duplicate()
+	_multi_shot_timer = 0.0  # Fire first shot immediately
 
 	fired.emit()
 
@@ -70,59 +94,67 @@ func upgrade_range(amount: float) -> void:
 	weapon_range += amount
 
 # Private methods
-func _find_target_direction() -> Vector2:
-	# Find nearest enemy within weapon range
-	var enemies: Array[Node] = get_tree().get_nodes_in_group("enemies")
-	if enemies.is_empty():
-		return Vector2.ZERO
+func _find_multiple_target_directions(count: int) -> Array[Vector2]:
+	"""Find directions to multiple nearest enemies.
+	Returns array of directions, can target same enemy multiple times if not enough enemies."""
+	var enemies: Array[Node] = NodeUtils.get_valid_nodes_in_group(get_tree(), "enemies")
+	if enemies.is_empty() or not owner_node:
+		return []
 
-	# Get player position (WeaponManager's parent is the Player)
-	var player: Node2D = get_parent().get_parent() as Node2D
-	if not player:
-		return Vector2.ZERO
+	var owner_pos: Vector2 = owner_node.global_position
+	var target_directions: Array[Vector2] = []
 
-	var player_pos: Vector2 = player.global_position
-	var nearest_enemy: Node = null
-	var nearest_distance: float = INF
-
+	# Get all enemies within range with their distances
+	var enemies_in_range: Array[Dictionary] = []
 	for enemy in enemies:
-		if not is_instance_valid(enemy):
-			continue
-		var distance: float = player_pos.distance_to(enemy.global_position)
+		var distance: float = owner_pos.distance_to(enemy.global_position)
+		if distance <= weapon_range:
+			enemies_in_range.append({
+				"enemy": enemy,
+				"distance": distance
+			})
 
-		# Only consider enemies within weapon range
-		if distance <= weapon_range and distance < nearest_distance:
-			nearest_distance = distance
-			nearest_enemy = enemy
+	if enemies_in_range.is_empty():
+		return []
 
-	if nearest_enemy:
-		return player_pos.direction_to(nearest_enemy.global_position)
+	# Sort by distance (closest first)
+	enemies_in_range.sort_custom(func(a, b): return a.distance < b.distance)
 
-	return Vector2.ZERO
+	# Get directions to nearest enemies
+	# If we need more shots than enemies, target nearest enemy multiple times
+	for i in range(count):
+		var target_index: int = i % enemies_in_range.size()  # Wrap around if needed
+		var enemy: Node = enemies_in_range[target_index].enemy
+		var direction: Vector2 = owner_pos.direction_to(enemy.global_position)
+		target_directions.append(direction)
+
+	return target_directions
 
 func _spawn_projectile(base_direction: Vector2, index: int) -> void:
-	if not projectile_scene:
+	if not owner_node:
 		return
 
-	# Get player position
-	var player: Node2D = get_parent().get_parent() as Node2D
-	if not player:
+	var projectile: Projectile
+
+	# Use object pool if available, otherwise instantiate directly
+	if projectile_pool:
+		projectile = projectile_pool.get_projectile()
+	elif projectile_scene:
+		projectile = projectile_scene.instantiate()
+		get_tree().current_scene.add_child(projectile)
+	else:
+		push_error("WeaponBase: No projectile_pool or projectile_scene configured for " + weapon_name)
 		return
 
-	var projectile: Projectile = projectile_scene.instantiate()
-
-	# Calculate spread
-	var angle_offset: float = 0.0
-	if projectile_count > 1 and spread_angle > 0:
-		var spread_step: float = spread_angle / (projectile_count - 1)
-		angle_offset = -spread_angle / 2.0 + spread_step * index
-
-	var direction: Vector2 = base_direction.rotated(deg_to_rad(angle_offset))
-
-	# Add to scene
-	get_tree().current_scene.add_child(projectile)
-
-	# Setup projectile
-	projectile.setup(player.global_position, direction, damage)
+	# Setup projectile with multipliers applied
+	var final_damage: int = int(damage * damage_multiplier)
+	projectile.setup(owner_node.global_position, base_direction, final_damage)
 	projectile.speed = projectile_speed
-	projectile.pierce_count = pierce_count
+	projectile.pierce_count = pierce_count + pierce_bonus
+
+	# Apply size multiplier
+	if projectile.has_method("set_size_multiplier"):
+		projectile.set_size_multiplier(projectile_size_multiplier)
+	else:
+		# Fallback: directly scale the projectile
+		projectile.scale = Vector2.ONE * projectile_size_multiplier

@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://bqx8y7m3n5rke"]
+
+[ext_resource type="Script" uid="uid://jf2chp1fvc01" path="res://scripts/pickups/xp_shard.gd" id="1_xp_shard"]
+[ext_resource type="Texture2D" uid="uid://dvpe0rlxrud0y" path="res://assets/ui/xp_gem.png" id="2_wjvot"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 8.0
+
+[node name="XPShard" type="Area2D"]
+collision_layer = 16
+script = ExtResource("1_xp_shard")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_wjvot")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

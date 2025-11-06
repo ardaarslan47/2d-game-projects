@@ -1,8 +1,9 @@
-[gd_scene load_steps=30 format=3 uid="uid://bwfp2yx6qpojy"]
+[gd_scene load_steps=31 format=3 uid="uid://bwfp2yx6qpojy"]
 
 [ext_resource type="Script" uid="uid://c7g361sahtag1" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://btjljw0qk67cu" path="res://assets/characters/player/walk.png" id="2_76oj4"]
 [ext_resource type="Script" uid="uid://ckya4kpjo3um0" path="res://scripts/components/weapon_manager.gd" id="2_weapon_manager"]
+[ext_resource type="Script" uid="uid://gavq3b4nid8t" path="res://scripts/components/health_component.gd" id="4_dyp2m"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dyp2m"]
 atlas = ExtResource("2_76oj4")
@@ -209,3 +210,6 @@ shape = SubResource("CapsuleShape2D_76oj4")
 
 [node name="WeaponManager" type="Node" parent="."]
 script = ExtResource("2_weapon_manager")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("4_dyp2m")
