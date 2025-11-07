@@ -22,6 +22,7 @@ var is_invincible: bool = false
 var current_level: int = 1
 var current_xp: int = 0
 var xp_to_next_level: int = 100
+var character_data: CharacterData = null
 
 # Private variables
 var _input_direction: Vector2 = Vector2.ZERO
@@ -42,6 +43,18 @@ var _current_animation: String = GameConstants.PLAYER_DEFAULT_ANIMATION
 func _ready() -> void:
 	add_to_group("player")
 
+	# Initialize character from GameManager selection
+	character_data = GameManager.get_selected_character()
+	if character_data != null:
+		# Apply character color
+		sprite.modulate = character_data.character_color
+		print("Applied character color: %s to %s" % [character_data.character_color, character_data.character_name])
+	else:
+		# Fallback to default if no character selected
+		print("Warning: No character selected, returning to character selection")
+		get_tree().change_scene_to_file("res://scenes/ui/character_selection.tscn")
+		return
+
 	# Connect HealthComponent signals
 	health_component.health_changed.connect(_on_health_changed)
 	health_component.died.connect(_on_health_died)
@@ -60,8 +73,13 @@ func _ready() -> void:
 	sprite.frame = 0
 	sprite.stop()
 
-	# Add starting weapon
-	weapon_manager.add_weapon_by_name("Rusty Pistol")
+	# Add starting weapon from character data
+	if character_data != null:
+		weapon_manager.add_weapon_by_name(character_data.starting_weapon)
+		print("Added starting weapon: %s" % character_data.starting_weapon)
+	else:
+		# Fallback to Rusty Pistol if no character selected
+		weapon_manager.add_weapon_by_name("Rusty Pistol")
 
 func _physics_process(delta: float) -> void:
 	if not health_component.is_alive:
@@ -100,7 +118,17 @@ func heal(amount: int) -> void:
 
 func collect_xp(amount: int) -> void:
 	"""Collect XP and check for level up."""
-	current_xp += amount
+	var xp_to_add: int = amount
+
+	# Apply character XP bonus passive (stacks per level: 10% per level)
+	# Level 1 = +0%, Level 2 = +10%, Level 3 = +20%, Level 11 = +100%, etc.
+	if character_data != null:
+		var level_bonus: float = character_data.xp_bonus_multiplier * (current_level - 1)
+		xp_to_add = int(amount * (1.0 + level_bonus))
+		if level_bonus > 0:
+			print("XP collected: %d (base) -> %d (with +%d%% level %d bonus)" % [amount, xp_to_add, int(level_bonus * 100), current_level])
+
+	current_xp += xp_to_add
 	xp_changed.emit(current_xp, xp_to_next_level)
 
 	# Check for level up
@@ -172,17 +200,17 @@ func _apply_stat_upgrade(stat: Dictionary, target_weapon: Node) -> void:
 			print("  +%d%% Range" % value)
 
 		3:  # PIERCE
-			if target_weapon.has("pierce_bonus"):
+			if "pierce_bonus" in target_weapon:
 				target_weapon.pierce_bonus += value
 			print("  +%d Penetration" % value)
 
 		4:  # PROJECTILE_COUNT (multi-shot)
-			if target_weapon.has("projectile_count"):
+			if "projectile_count" in target_weapon:
 				target_weapon.projectile_count += value
 			print("  +%d Multi-Shot" % value)
 
 		5:  # PROJECTILE_SIZE
-			if target_weapon.has("projectile_size_multiplier"):
+			if "projectile_size_multiplier" in target_weapon:
 				target_weapon.projectile_size_multiplier += value / 100.0
 			print("  +%d%% Projectile Size" % value)
 

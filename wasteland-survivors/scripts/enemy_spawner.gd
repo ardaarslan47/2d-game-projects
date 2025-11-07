@@ -14,6 +14,10 @@ extends Node2D
 var _spawn_timer: float = 0.0
 var _zombie_scene: PackedScene
 var _zombie_cat_scene: PackedScene
+var _big_zombie_scene: PackedScene
+var _boss_scene: PackedScene
+var _boss_spawned: bool = false
+var _last_big_zombie_minute: int = -1  # Track last minute big zombie spawned
 
 # Onready variables
 @onready var player: Node2D = get_tree().get_first_node_in_group("player")
@@ -21,15 +25,25 @@ var _zombie_cat_scene: PackedScene
 func _ready() -> void:
 	_zombie_scene = load("res://scenes/enemies/zombie.tscn")
 	_zombie_cat_scene = load("res://scenes/enemies/zombie_cat.tscn")
+	_big_zombie_scene = load("res://scenes/enemies/big_zombie.tscn")
+	_boss_scene = load("res://scenes/enemies/boss.tscn")
 
 func _process(delta: float) -> void:
-	_spawn_timer -= delta
+	# Check for big zombie spawn (every minute except minute 5)
+	_check_big_zombie_spawn()
 
-	if _spawn_timer <= 0:
-		# Apply difficulty scaling: faster spawn rate over time
-		var spawn_rate_multiplier: float = GameManager.get_spawn_rate_multiplier()
-		_spawn_timer = spawn_interval / spawn_rate_multiplier
-		_spawn_enemy()
+	# Check for boss spawn (at 5:00 exactly)
+	_check_boss_spawn()
+
+	# Regular enemy spawning (stop when boss is active)
+	if not GameManager.is_boss_alive():
+		_spawn_timer -= delta
+
+		if _spawn_timer <= 0:
+			# Apply difficulty scaling: faster spawn rate over time
+			var spawn_rate_multiplier: float = GameManager.get_spawn_rate_multiplier()
+			_spawn_timer = spawn_interval / spawn_rate_multiplier
+			_spawn_enemy()
 
 # Private methods
 func _spawn_enemy() -> void:
@@ -122,3 +136,78 @@ func _apply_difficulty_scaling(enemy: EnemyBase, is_zombie_cat: bool = false) ->
 	# Set the enemy's max health and current health
 	enemy.health_component.set_max_health(scaled_health)
 	enemy.health_component.current_health = scaled_health
+
+func _check_big_zombie_spawn() -> void:
+	"""Check if it's time to spawn a big zombie (every minute except minute 5)."""
+	var game_time: float = GameManager.game_time
+	var minutes: int = int(game_time / 60.0)
+	var seconds: float = fmod(game_time, 60.0)
+
+	# Spawn big zombie at the start of each minute (first 2 seconds for safety)
+	# Minutes 1, 2, 3, 4 (NOT 5 - that's for the boss)
+	if seconds < 2.0 and minutes >= 1 and minutes < 5 and minutes != _last_big_zombie_minute:
+		_last_big_zombie_minute = minutes
+		_spawn_big_zombie()
+		print("Big Zombie spawn triggered at %d:%02d" % [minutes, int(seconds)])
+
+func _spawn_big_zombie() -> void:
+	"""Spawn a single big zombie enemy."""
+	var spawn_pos := _get_random_spawn_position()
+	var big_zombie: EnemyBase = _instantiate_enemy(_big_zombie_scene)
+
+	if not big_zombie:
+		return
+
+	big_zombie.global_position = spawn_pos
+	_apply_big_zombie_scaling(big_zombie)
+	print("Big Zombie spawned at minute %d" % int(GameManager.game_time / 60.0))
+
+func _apply_big_zombie_scaling(enemy: EnemyBase) -> void:
+	"""Apply 3x health multiplier to big zombie."""
+	if not enemy.health_component:
+		return
+
+	# Get scaled health from GameManager and multiply by 3
+	var scaled_health: int = GameManager.get_scaled_enemy_health()
+	scaled_health = int(scaled_health * 3.0)  # 3x health multiplier
+
+	enemy.health_component.set_max_health(scaled_health)
+	enemy.health_component.current_health = scaled_health
+
+func _check_boss_spawn() -> void:
+	"""Check if it's time to spawn the boss (slightly before 5:00, once per stage)."""
+	var game_time: float = GameManager.game_time
+
+	# Spawn boss slightly before 5:00 (at 299.5 seconds) to ensure it's alive before stage completion check
+	if game_time >= 299.5 and not _boss_spawned:
+		_boss_spawned = true
+		_spawn_boss()
+
+func _spawn_boss() -> void:
+	"""Spawn the boss enemy."""
+	var spawn_pos := _get_random_spawn_position()
+	var boss: EnemyBase = _instantiate_enemy(_boss_scene)
+
+	if not boss:
+		return
+
+	boss.global_position = spawn_pos
+	_apply_boss_scaling(boss)
+	print("BOSS SPAWNED at 5:00!")
+
+func _apply_boss_scaling(enemy: EnemyBase) -> void:
+	"""Apply 10x health multiplier to boss."""
+	if not enemy.health_component:
+		return
+
+	# Get scaled health from GameManager and multiply by 10
+	var scaled_health: int = GameManager.get_scaled_enemy_health()
+	scaled_health = int(scaled_health * 10.0)  # 10x health multiplier
+
+	enemy.health_component.set_max_health(scaled_health)
+	enemy.health_component.current_health = scaled_health
+
+func reset_for_new_stage() -> void:
+	"""Reset spawner state for a new stage."""
+	_boss_spawned = false
+	_last_big_zombie_minute = -1

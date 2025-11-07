@@ -16,10 +16,11 @@ func show_game_over(time_survived: String, level: int) -> void:
 
 # Button signal handlers
 func _on_restart_button_pressed() -> void:
-	"""Restart the game by reloading the current scene."""
-	# Unpause the game before reloading
+	"""Restart the game by returning to character selection."""
+	# Unpause the game before changing scenes
 	get_tree().paused = false
-	get_tree().reload_current_scene()
+	# Return to character selection
+	get_tree().change_scene_to_file("res://scenes/ui/character_selection.tscn")
 
 func _on_quit_button_pressed() -> void:
 	"""Quit the game."""

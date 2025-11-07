@@ -1,20 +1,21 @@
-[gd_scene load_steps=18 format=3 uid="uid://c5vxqj8yw6hbn"]
+[gd_scene load_steps=19 format=3 uid="uid://c5vxqj8yw6hbn"]
 
 [ext_resource type="PackedScene" uid="uid://bwfp2yx6qpojy" path="res://scenes/characters/player.tscn" id="1_player"]
-[ext_resource type="Script" uid="uid://dxt10o6gbyrss" path="res://scripts/enemy_spawner.gd" id="2_spawner"]
+[ext_resource type="Script" uid="uid://deug1wrjrf20m" path="res://scripts/enemy_spawner.gd" id="2_spawner"]
 [ext_resource type="PackedScene" uid="uid://beh25icqdyljv" path="res://scenes/ui/hud.tscn" id="3_hud"]
 [ext_resource type="Texture2D" uid="uid://cymqgqor2cukf" path="res://assets/tilesets/grass.png" id="4_grass"]
 [ext_resource type="PackedScene" uid="uid://cy5m8p3w4nqke" path="res://scenes/ui/level_up_menu.tscn" id="4_levelup"]
-[ext_resource type="Script" uid="uid://dvut4wm546wyw" path="res://scripts/game.gd" id="5_game"]
+[ext_resource type="Script" uid="uid://kbo4giejh317" path="res://scripts/game.gd" id="5_game"]
 [ext_resource type="PackedScene" uid="uid://doklpslqtsito" path="res://scenes/ui/game_over_screen.tscn" id="5_gameover"]
-[ext_resource type="Script" uid="uid://bl2a26js5cev4" path="res://scripts/chunk_manager.gd" id="6_chunk"]
+[ext_resource type="Script" uid="uid://ckky6aep10jgl" path="res://scripts/chunk_manager.gd" id="6_chunk"]
 [ext_resource type="PackedScene" uid="uid://1iymdowvnnfp" path="res://scenes/ui/pause_menu.tscn" id="6_pause"]
 [ext_resource type="PackedScene" uid="uid://dt8341utj8oya" path="res://scenes/ui/level_complete_screen.tscn" id="7_levelcomplete"]
-[ext_resource type="Script" uid="uid://dnpyicgtkatow" path="res://scripts/procedural_terrain.gd" id="7_terrain"]
-[ext_resource type="Script" uid="uid://bch1o4b60r8pf" path="res://scripts/projectile_pool.gd" id="8_pool"]
+[ext_resource type="Script" uid="uid://b13v5vdi8ltuy" path="res://scripts/procedural_terrain.gd" id="7_terrain"]
+[ext_resource type="Script" uid="uid://durncx712krye" path="res://scripts/projectile_pool.gd" id="8_pool"]
 [ext_resource type="PackedScene" uid="uid://c8vxqj8yw6hbn" path="res://scenes/weapons/projectile.tscn" id="9_projectile"]
-[ext_resource type="Script" uid="uid://na8vxkuk6d5q" path="res://scripts/enemy_pool.gd" id="10_enemy_pool"]
+[ext_resource type="Script" uid="uid://qdacbwm41m68" path="res://scripts/enemy_pool.gd" id="10_enemy_pool"]
 [ext_resource type="PackedScene" uid="uid://eh25icqdyljv" path="res://scenes/enemies/zombie.tscn" id="11_zombie"]
+[ext_resource type="PackedScene" uid="uid://cqg8h5m4n2pqr" path="res://scenes/enemies/big_zombie.tscn" id="12_big_zombie"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_gee14"]
 texture = ExtResource("4_grass")
@@ -296,6 +297,12 @@ enemy_pool = NodePath("../EnemyPool")
 script = ExtResource("10_enemy_pool")
 enemy_scene = ExtResource("11_zombie")
 initial_pool_size = 25
+
+[node name="BigZombiePool" type="Node" parent="."]
+script = ExtResource("10_enemy_pool")
+enemy_scene = ExtResource("12_big_zombie")
+initial_pool_size = 5
+max_pool_size = 10
 
 [node name="ProjectilePool" type="Node" parent="."]
 script = ExtResource("8_pool")

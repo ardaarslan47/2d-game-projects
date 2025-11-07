@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Wasteland Survivors"
 config/description="Post-apocalyptic horde survivor with game-breaking synergies"
-run/main_scene="res://scenes/game.tscn"
+run/main_scene="res://scenes/ui/character_selection.tscn"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 

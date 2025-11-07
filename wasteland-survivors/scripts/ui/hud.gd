@@ -11,9 +11,14 @@ extends CanvasLayer
 @onready var stage_label: Label = $MarginContainer/VBoxContainer/StageLabel
 @onready var xp_bar: ProgressBar = $MarginContainer/VBoxContainer/XPBar
 @onready var xp_label: Label = $MarginContainer/VBoxContainer/XPBar/XPLabel
+@onready var boss_health_container: VBoxContainer = $BossHealthContainer
+@onready var boss_health_bar: ProgressBar = $BossHealthContainer/BossHealthBar
+@onready var boss_health_label: Label = $BossHealthContainer/BossHealthBar/BossHealthLabel
+@onready var boss_name_label: Label = $BossHealthContainer/BossNameLabel
 
 # Private variables
 var _game_time: float = 0.0
+var _current_boss: EnemyBase = null
 
 func _ready() -> void:
 	# Connect to player
@@ -26,10 +31,16 @@ func _ready() -> void:
 	# Update initial stage
 	_update_stage()
 
+	# Hide boss health bar initially
+	if boss_health_container:
+		boss_health_container.visible = false
+
 func _process(delta: float) -> void:
-	_game_time += delta
+	# Use GameManager time instead of local timer
+	_game_time = GameManager.game_time
 	_update_timer()
 	_update_stage()
+	_update_boss_health_bar()
 
 # Private methods
 func _on_player_health_changed(current: int, maximum: int) -> void:
@@ -64,3 +75,33 @@ func _on_player_xp_changed(current_xp: int, xp_to_next_level: int) -> void:
 
 func _on_player_level_up(new_level: int) -> void:
 	level_label.text = "Level: %d" % new_level
+
+func _update_boss_health_bar() -> void:
+	"""Update boss health bar if boss is active."""
+	if not boss_health_container:
+		return
+
+	# Find boss in the scene
+	var bosses: Array[Node] = get_tree().get_nodes_in_group("boss")
+
+	if bosses.size() > 0:
+		# Boss is alive - show health bar
+		_current_boss = bosses[0] as EnemyBase
+		if _current_boss and _current_boss.health_component:
+			boss_health_container.visible = true
+
+			# Update health bar values
+			var current_health: int = _current_boss.health_component.current_health
+			var max_health: int = _current_boss.health_component.max_health
+
+			boss_health_bar.max_value = max_health
+			boss_health_bar.value = current_health
+			boss_health_label.text = "%d / %d" % [current_health, max_health]
+			boss_name_label.text = "BOSS"
+
+			# Color boss health bar (always red/orange for menacing look)
+			boss_health_bar.modulate = Color(1.0, 0.3, 0.0)  # Orange-red
+	else:
+		# No boss - hide health bar
+		boss_health_container.visible = false
+		_current_boss = null
