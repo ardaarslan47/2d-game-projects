@@ -1,0 +1,36 @@
+[gd_scene load_steps=6 format=3 uid="uid://cqg8h5m4n2pqr"]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_big_zombie.gd" id="1_big_zombie"]
+[ext_resource type="SpriteFrames" uid="uid://bsc1yaewyw3vq" path="res://resources/zombie_sprite_frames.tres" id="2_sprite_frames"]
+[ext_resource type="Script" uid="uid://gavq3b4nid8t" path="res://scripts/components/health_component.gd" id="3_health"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
+radius = 12.0
+height = 54.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hitbox"]
+radius = 12.0
+height = 60.0
+
+[node name="BigZombie" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("1_big_zombie")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(3, 3)
+sprite_frames = ExtResource("2_sprite_frames")
+animation = &"walk"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_body")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("CapsuleShape2D_hitbox")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("3_health")
+max_health = 30

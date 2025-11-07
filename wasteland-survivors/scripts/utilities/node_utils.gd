@@ -4,16 +4,21 @@ class_name NodeUtils
 ## Provides consistent null/validity checking patterns.
 
 ## Check if a node is both non-null and still valid in the scene tree.
-static func is_valid(node: Node) -> bool:
-	return node != null and is_instance_valid(node)
+## Uses Variant type to accept freed nodes without type checking errors.
+static func is_valid(node: Variant) -> bool:
+	if node == null:
+		return false
+	if not is_instance_valid(node):
+		return false
+	return true
 
 ## Safely queue_free a node if it's valid.
-static func safe_queue_free(node: Node) -> void:
+static func safe_queue_free(node: Variant) -> void:
 	if is_valid(node):
 		node.queue_free()
 
 ## Safely call a method on a node if it exists and is valid.
-static func safe_call(node: Node, method: String, args: Array = []) -> Variant:
+static func safe_call(node: Variant, method: String, args: Array = []) -> Variant:
 	if is_valid(node) and node.has_method(method):
 		return node.callv(method, args)
 	return null

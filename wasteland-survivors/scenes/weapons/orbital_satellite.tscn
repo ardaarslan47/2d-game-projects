@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8r5n2q7k4xvt"]
+
+[ext_resource type="Script" path="res://scripts/weapons/orbital_satellite.gd" id="1_orbital"]
+
+[node name="OrbitalSatellite" type="Node2D"]
+script = ExtResource("1_orbital")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0, 0.8, 0.8, 1)
+
+[node name="ProjectileSpawn" type="Marker2D" parent="."]
+
+[node name="FireCooldown" type="Timer" parent="."]
+one_shot = false
+
+[connection signal="timeout" from="FireCooldown" to="." method="_on_fire_cooldown_timeout"]

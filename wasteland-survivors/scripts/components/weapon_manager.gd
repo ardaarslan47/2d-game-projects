@@ -5,15 +5,15 @@ extends Node
 ## Handles weapon addition, removal, and updates.
 
 # Signals
-signal weapon_added(weapon: WeaponBase)
-signal weapon_removed(weapon: WeaponBase)
+signal weapon_added(weapon: Node)
+signal weapon_removed(weapon: Node)
 
 # Exported variables
 @export var weapon_registry: WeaponRegistry
 @export var projectile_pool: ProjectilePool  # Optional: Set to use object pooling for all weapons
 
 # Public variables
-var active_weapons: Array[WeaponBase] = []
+var active_weapons: Array[Node] = []  # Can hold both WeaponBase and WeaponBaseNew
 
 func _ready() -> void:
 	# Create default registry if not set
@@ -21,8 +21,8 @@ func _ready() -> void:
 		weapon_registry = WeaponRegistry.new()
 
 # Public methods
-func add_weapon(weapon_script: Script) -> WeaponBase:
-	var weapon: WeaponBase = weapon_script.new()
+func add_weapon(weapon_script: Script) -> WeaponBaseNew:
+	var weapon: WeaponBaseNew = weapon_script.new()
 	# Set owner_node before adding to tree (before _ready() is called)
 	weapon.owner_node = get_parent()
 	# Set projectile pool if available
@@ -33,13 +33,13 @@ func add_weapon(weapon_script: Script) -> WeaponBase:
 	weapon_added.emit(weapon)
 	return weapon
 
-func add_weapon_by_name(weapon_name: String) -> WeaponBase:
+func add_weapon_by_name(weapon_name: String) -> WeaponBaseNew:
 	var weapon_script: Script = _get_weapon_script(weapon_name)
 	if weapon_script:
 		return add_weapon(weapon_script)
 	return null
 
-func remove_weapon(weapon: WeaponBase) -> void:
+func remove_weapon(weapon: Node) -> void:
 	if weapon in active_weapons:
 		active_weapons.erase(weapon)
 		weapon_removed.emit(weapon)
@@ -47,15 +47,18 @@ func remove_weapon(weapon: WeaponBase) -> void:
 
 func has_weapon(weapon_name: String) -> bool:
 	for weapon in active_weapons:
-		if weapon.weapon_name == weapon_name:
+		if "weapon_name" in weapon and weapon.weapon_name == weapon_name:
 			return true
 	return false
 
-func get_weapon(weapon_name: String) -> WeaponBase:
+func get_weapon(weapon_name: String) -> Node:
 	for weapon in active_weapons:
-		if weapon.weapon_name == weapon_name:
+		if "weapon_name" in weapon and weapon.weapon_name == weapon_name:
 			return weapon
 	return null
+
+func get_active_weapons() -> Array[Node]:
+	return active_weapons
 
 # Private methods
 func _get_weapon_script(weapon_name: String) -> Script:

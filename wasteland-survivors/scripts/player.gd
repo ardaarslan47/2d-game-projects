@@ -22,6 +22,7 @@ var is_invincible: bool = false
 var current_level: int = 1
 var current_xp: int = 0
 var xp_to_next_level: int = 100
+var character_data: CharacterData = null
 
 # Private variables
 var _input_direction: Vector2 = Vector2.ZERO
@@ -42,6 +43,18 @@ var _current_animation: String = GameConstants.PLAYER_DEFAULT_ANIMATION
 func _ready() -> void:
 	add_to_group("player")
 
+	# Initialize character from GameManager selection
+	character_data = GameManager.get_selected_character()
+	if character_data != null:
+		# Apply character color
+		sprite.modulate = character_data.character_color
+		print("Applied character color: %s to %s" % [character_data.character_color, character_data.character_name])
+	else:
+		# Fallback to default if no character selected
+		print("Warning: No character selected, returning to character selection")
+		get_tree().change_scene_to_file("res://scenes/ui/character_selection.tscn")
+		return
+
 	# Connect HealthComponent signals
 	health_component.health_changed.connect(_on_health_changed)
 	health_component.died.connect(_on_health_died)
@@ -60,9 +73,13 @@ func _ready() -> void:
 	sprite.frame = 0
 	sprite.stop()
 
-	# Add starting weapons
-	weapon_manager.add_weapon_by_name("Rusty Pistol")
-	weapon_manager.add_weapon_by_name("Rusty Sword")
+	# Add starting weapon from character data
+	if character_data != null:
+		weapon_manager.add_weapon_by_name(character_data.starting_weapon)
+		print("Added starting weapon: %s" % character_data.starting_weapon)
+	else:
+		# Fallback to Rusty Pistol if no character selected
+		weapon_manager.add_weapon_by_name("Rusty Pistol")
 
 func _physics_process(delta: float) -> void:
 	if not health_component.is_alive:
@@ -101,7 +118,17 @@ func heal(amount: int) -> void:
 
 func collect_xp(amount: int) -> void:
 	"""Collect XP and check for level up."""
-	current_xp += amount
+	var xp_to_add: int = amount
+
+	# Apply character XP bonus passive (stacks per level: 10% per level)
+	# Level 1 = +0%, Level 2 = +10%, Level 3 = +20%, Level 11 = +100%, etc.
+	if character_data != null:
+		var level_bonus: float = character_data.xp_bonus_multiplier * (current_level - 1)
+		xp_to_add = int(amount * (1.0 + level_bonus))
+		if level_bonus > 0:
+			print("XP collected: %d (base) -> %d (with +%d%% level %d bonus)" % [amount, xp_to_add, int(level_bonus * 100), current_level])
+
+	current_xp += xp_to_add
 	xp_changed.emit(current_xp, xp_to_next_level)
 
 	# Check for level up
@@ -123,64 +150,137 @@ func _level_up() -> void:
 	print("Level up! Now level: ", current_level)
 
 func apply_upgrade(upgrade_data: Dictionary) -> void:
-	"""Apply weapon upgrades based on the upgrade data from level-up menu."""
-	if not upgrade_data.has("stats") or not upgrade_data.has("weapon"):
-		push_error("Invalid upgrade data: missing 'stats' or 'weapon' key")
+	"""Apply weapon upgrades or unlock new weapons based on the upgrade data from level-up menu."""
+	if not upgrade_data.has("weapon"):
+		push_error("Invalid upgrade data: missing 'weapon' key")
 		return
 
 	var weapon_name: String = upgrade_data.get("weapon")
-	print("Applying upgrades to %s:" % weapon_name)
+	var is_unlock: bool = upgrade_data.get("is_unlock", false)
 
-	# Find the specific weapon to upgrade
-	var target_weapon: WeaponBase = weapon_manager.get_weapon(weapon_name)
-	if not target_weapon:
-		push_error("Cannot find weapon: %s" % weapon_name)
-		return
+	if is_unlock:
+		# Unlock new weapon
+		print("Unlocking weapon: %s" % weapon_name)
+		weapon_manager.add_weapon_by_name(weapon_name)
+	else:
+		# Apply stat upgrades to existing weapon
+		print("Applying upgrades to %s:" % weapon_name)
 
-	# Apply each stat upgrade to the specific weapon
-	for stat in upgrade_data.stats:
-		_apply_stat_upgrade(stat, target_weapon)
+		# Find the specific weapon to upgrade
+		var target_weapon: Node = weapon_manager.get_weapon(weapon_name)
+		if not target_weapon:
+			push_error("Cannot find weapon: %s" % weapon_name)
+			return
 
-func _apply_stat_upgrade(stat: Dictionary, target_weapon: WeaponBase) -> void:
+		# Apply each stat upgrade to the specific weapon
+		for stat in upgrade_data.stats:
+			_apply_stat_upgrade(stat, target_weapon)
+
+func _apply_stat_upgrade(stat: Dictionary, target_weapon: Node) -> void:
 	"""Apply a single stat upgrade to a specific weapon."""
 	var stat_type: int = stat.type
 	var value: int = stat.value
+	var stat_name: String = stat.get("name", "Unknown")
+
+	# Convert value to multiplier for percentage-based stats
+	var multiplier: float = 1.0 + (value / 100.0)
 
 	# Use the LevelUpMenu enum values
 	match stat_type:
 		0:  # DAMAGE
-			var damage_boost: float = value / 100.0
-			target_weapon.damage_multiplier += damage_boost
-			print("  +%d%% Damage (total: %.1f%%)" % [value, target_weapon.damage_multiplier * 100])
+			target_weapon.damage_multiplier += value / 100.0
+			print("  +%d%% Damage" % value)
 
 		1:  # FIRE_RATE
-			var fire_rate_boost: float = value / 100.0
-			target_weapon.fire_rate_multiplier += fire_rate_boost
-			print("  +%d%% Attack Speed (total: %.1f%%)" % [value, target_weapon.fire_rate_multiplier * 100])
+			target_weapon.fire_rate_multiplier += value / 100.0
+			print("  +%d%% Attack Speed" % value)
 
 		2:  # RANGE
-			var range_boost: float = value / 100.0
-			target_weapon.weapon_range *= (1.0 + range_boost)
-			print("  +%d%% Range (new: %.0f)" % [value, target_weapon.weapon_range])
+			target_weapon.weapon_range *= multiplier
+			print("  +%d%% Range" % value)
 
 		3:  # PIERCE
-			target_weapon.pierce_bonus += value
-			print("  +%d Penetration (total: %d)" % [value, target_weapon.pierce_count + target_weapon.pierce_bonus])
+			if "pierce_bonus" in target_weapon:
+				target_weapon.pierce_bonus += value
+			print("  +%d Penetration" % value)
 
 		4:  # PROJECTILE_COUNT (multi-shot)
-			target_weapon.projectile_count += value
-			print("  +%d Multi-Shot (fires at %d enemies)" % [value, target_weapon.projectile_count])
+			if "projectile_count" in target_weapon:
+				target_weapon.projectile_count += value
+			print("  +%d Multi-Shot" % value)
 
 		5:  # PROJECTILE_SIZE
-			var size_boost: float = value / 100.0
-			target_weapon.projectile_size_multiplier += size_boost
-			print("  +%d%% Projectile Size (total: %.1f%%)" % [value, target_weapon.projectile_size_multiplier * 100])
+			if "projectile_size_multiplier" in target_weapon:
+				target_weapon.projectile_size_multiplier += value / 100.0
+			print("  +%d%% Projectile Size" % value)
 
 		6:  # CONE_ANGLE (sword-specific)
 			if target_weapon.has_method("upgrade_cone_angle"):
 				target_weapon.upgrade_cone_angle(value)
-			else:
-				print("  Warning: %s doesn't support cone angle upgrades" % target_weapon.weapon_name)
+			print("  +%d° Cone Width" % value)
+
+		7:  # AREA_SIZE (aura, force field)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Size", multiplier)
+			print("  +%d%% Size" % value)
+
+		8:  # SATELLITE_COUNT (orbital)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Satellite Count", float(value))
+			print("  +%d Satellites" % value)
+
+		9:  # ORBIT_SPEED (orbital)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Orbit Speed", multiplier)
+			print("  +%d%% Orbit Speed" % value)
+
+		10:  # PUSH_FORCE (force field)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Push Force", multiplier)
+			print("  +%d%% Push Force" % value)
+
+		11:  # BEAM_WIDTH (laser)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Beam Width", multiplier)
+			print("  +%d%% Beam Width" % value)
+
+		12:  # SWEEP_SPEED (laser)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Sweep Speed", multiplier)
+			print("  +%d%% Sweep Speed" % value)
+
+		13:  # EXPLOSION_RADIUS (grenade)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Explosion Radius", multiplier)
+			print("  +%d%% Blast Radius" % value)
+
+		14:  # JUMP_COUNT (chain lightning)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Jump Count", float(value))
+			print("  +%d Chain Jumps" % value)
+
+		15:  # CHAIN_RANGE (chain lightning)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Chain Range", multiplier)
+			print("  +%d%% Chain Range" % value)
+
+		16:  # HOMING_STRENGTH (homing missiles)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Homing Strength", multiplier)
+			print("  +%d%% Homing Power" % value)
+
+		17:  # PROJECTILE_SPEED (machine gun, missiles)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Projectile Speed", multiplier)
+			print("  +%d%% Projectile Speed" % value)
+
+		18:  # SPREAD_ANGLE (machine gun)
+			if target_weapon.has_method("upgrade_stat"):
+				target_weapon.upgrade_stat("Spread Angle", multiplier)
+			print("  +%d° Spread" % value)
+
+		_:
+			print("  Warning: Unknown upgrade stat type: %d" % stat_type)
 
 # Private methods
 func _handle_input() -> void:

@@ -7,7 +7,15 @@ extends Resource
 # Map of weapon names to script paths
 @export var weapons: Dictionary = {
 	"Rusty Pistol": "res://scripts/weapons/weapon_pistol.gd",
-	"Rusty Sword": "res://scripts/weapons/weapon_sword.gd"
+	"Rusty Sword": "res://scripts/weapons/weapon_sword.gd",
+	"Purple Aura": "res://scripts/weapons/weapon_aura.gd",
+	"Machine Gun": "res://scripts/weapons/weapon_machine_gun.gd",
+	"Orbital Satellites": "res://scripts/weapons/weapon_orbital.gd",
+	"Force Field": "res://scripts/weapons/weapon_force_field.gd",
+	"Laser Beam": "res://scripts/weapons/weapon_laser.gd",
+	"Grenade Launcher": "res://scripts/weapons/weapon_grenade.gd",
+	"Chain Lightning": "res://scripts/weapons/weapon_lightning.gd",
+	"Homing Missiles": "res://scripts/weapons/weapon_homing_missile.gd"
 }
 
 ## Get weapon script by name.

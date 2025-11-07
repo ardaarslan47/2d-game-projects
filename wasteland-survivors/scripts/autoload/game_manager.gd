@@ -12,6 +12,9 @@ signal stage_completed(stage: int)
 var game_time: float = 0.0
 var is_game_running: bool = false
 
+# Character selection
+var selected_character: CharacterData = null
+
 # Stage system
 var current_stage: int = 1
 var stage_duration: float = 300.0  # 5 minutes per stage
@@ -57,7 +60,8 @@ func _process(delta: float) -> void:
 	game_time_changed.emit(game_time)
 
 	# Check for stage completion (5 minutes)
-	if game_time >= stage_duration:
+	# BOSS MODE: Stage only completes when boss is dead (not just at 5:00)
+	if game_time >= stage_duration and not is_boss_alive():
 		is_game_running = false
 		stage_completed.emit(current_stage)
 		return  # Don't process further until next stage starts
@@ -134,3 +138,20 @@ func get_formatted_time() -> String:
 	var minutes: int = int(game_time / 60.0)
 	var seconds: int = int(game_time) % 60
 	return "%02d:%02d" % [minutes, seconds]
+
+## Set the selected character for the current game session.
+func set_selected_character(character: CharacterData) -> void:
+	selected_character = character
+	print("Selected character: %s with weapon: %s" % [character.character_name, character.starting_weapon])
+
+## Get the currently selected character.
+func get_selected_character() -> CharacterData:
+	return selected_character
+
+## Check if boss is currently alive in the scene.
+func is_boss_alive() -> bool:
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	if tree:
+		var bosses: Array[Node] = tree.get_nodes_in_group("boss")
+		return bosses.size() > 0
+	return false

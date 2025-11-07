@@ -6,7 +6,7 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 8.0
 
-[node name="XPShard" type="Area2D"]
+[node name="XPShard" type="Area2D" groups=["xp_shards"]]
 collision_layer = 16
 script = ExtResource("1_xp_shard")
 
