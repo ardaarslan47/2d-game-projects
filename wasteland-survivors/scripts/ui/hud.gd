@@ -4,18 +4,16 @@ extends CanvasLayer
 ## Simple HUD displaying health bar, timer, and kill count.
 
 # Onready variables
-@onready var health_bar: ProgressBar = $MarginContainer/BackgroundPanel/VBoxContainer/HealthBar
-@onready var health_label: Label = $MarginContainer/BackgroundPanel/VBoxContainer/HealthBar/HealthLabel
-@onready var timer_label: Label = $MarginContainer/BackgroundPanel/VBoxContainer/TimerLabel
-@onready var kill_label: Label = $MarginContainer/BackgroundPanel/VBoxContainer/KillLabel
-@onready var level_label: Label = $MarginContainer/BackgroundPanel/VBoxContainer/LevelLabel
-@onready var stage_label: Label = $MarginContainer/BackgroundPanel/VBoxContainer/StageLabel
-@onready var xp_bar: ProgressBar = $MarginContainer/BackgroundPanel/VBoxContainer/XPBar
-@onready var xp_label: Label = $MarginContainer/BackgroundPanel/VBoxContainer/XPBar/XPLabel
+@onready var health_bar: ProgressBar = $MarginContainer/VBoxContainer/HealthBar
+@onready var health_label: Label = $MarginContainer/VBoxContainer/HealthBar/HealthLabel
+@onready var timer_label: Label = $MarginContainer/VBoxContainer/TimerLabel
+@onready var level_label: Label = $MarginContainer/VBoxContainer/LevelLabel
+@onready var stage_label: Label = $MarginContainer/VBoxContainer/StageLabel
+@onready var xp_bar: ProgressBar = $MarginContainer/VBoxContainer/XPBar
+@onready var xp_label: Label = $MarginContainer/VBoxContainer/XPBar/XPLabel
 
 # Private variables
 var _game_time: float = 0.0
-var _kill_count: int = 0
 
 func _ready() -> void:
 	# Connect to player
@@ -25,9 +23,6 @@ func _ready() -> void:
 		player.xp_changed.connect(_on_player_xp_changed)
 		player.level_up.connect(_on_player_level_up)
 
-	# Connect to enemies
-	get_tree().node_added.connect(_on_node_added)
-
 	# Update initial stage
 	_update_stage()
 
@@ -35,11 +30,6 @@ func _process(delta: float) -> void:
 	_game_time += delta
 	_update_timer()
 	_update_stage()
-
-# Public methods
-func increment_kills() -> void:
-	_kill_count += 1
-	_update_kills()
 
 # Private methods
 func _on_player_health_changed(current: int, maximum: int) -> void:
@@ -64,9 +54,6 @@ func _update_timer() -> void:
 	var seconds: int = int(_game_time) % 60
 	timer_label.text = "Time: %02d:%02d" % [minutes, seconds]
 
-func _update_kills() -> void:
-	kill_label.text = "Kills: %d" % _kill_count
-
 func _update_stage() -> void:
 	stage_label.text = "Stage: %d" % GameManager.current_stage
 
@@ -77,8 +64,3 @@ func _on_player_xp_changed(current_xp: int, xp_to_next_level: int) -> void:
 
 func _on_player_level_up(new_level: int) -> void:
 	level_label.text = "Level: %d" % new_level
-
-func _on_node_added(node: Node) -> void:
-	if node.is_in_group("enemies"):
-		if node.has_signal("died"):
-			node.died.connect(increment_kills)

@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://ddey2qs2xt60"]
+
+[ext_resource type="Script" path="res://scripts/weapons/force_field_ring.gd" id="1_ring"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ring"]
+radius = 50.0
+
+[node name="ForceFieldRing" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_ring")
+
+[node name="RingLine" type="Line2D" parent="."]
+width = 4.0
+default_color = Color(1, 0.8, 0, 0.8)
+closed = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ring")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

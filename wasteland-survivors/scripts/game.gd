@@ -46,11 +46,10 @@ func _on_player_died() -> void:
 
 	# Gather final stats
 	var time_survived: String = GameManager.get_formatted_time()
-	var kills: int = hud._kill_count if hud else 0
 	var level: int = player.current_level if player else 1
 
 	# Show game over screen with stats
-	game_over_screen.show_game_over(time_survived, kills, level)
+	game_over_screen.show_game_over(time_survived, level)
 
 func _on_stage_completed(stage: int) -> void:
 	"""Handle stage completion - pause game and show level complete screen."""
@@ -59,11 +58,10 @@ func _on_stage_completed(stage: int) -> void:
 
 	# Gather stats
 	var time_survived: String = GameManager.get_formatted_time()
-	var kills: int = hud._kill_count if hud else 0
 	var player_level: int = player.current_level if player else 1
 
 	# Show level complete screen
-	level_complete_screen.show_level_complete(stage, time_survived, kills, player_level)
+	level_complete_screen.show_level_complete(stage, time_survived, player_level)
 
 func _on_next_level_requested() -> void:
 	"""Handle next level button press - clear enemies and start next stage."""

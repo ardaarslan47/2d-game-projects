@@ -1,5 +1,5 @@
 class_name WeaponSword
-extends WeaponBase
+extends WeaponProjectile
 
 ## Rusty Sword - Melee weapon with cone-shaped slash attack.
 ## Short range, medium damage, knockback on hit.
@@ -13,17 +13,19 @@ var speed_reaction_time: float = 0.6  # How many seconds ahead to predict enemy 
 var debug_detection: bool = false  # Set to true to see detection ranges in console
 
 func _ready() -> void:
-	super._ready()
-
+	# Set weapon properties
 	weapon_name = "Rusty Sword"
-	damage = 12
-	fire_rate = 1.25  # 1.25 attacks per second (0.8s cooldown)
-	weapon_range = 100.0  # Short range melee weapon (actual attack range)
+	base_damage = 12.0
+	base_fire_rate = 1.25  # 1.25 attacks per second (0.8s cooldown)
+	base_weapon_range = 100.0  # Short range melee weapon (actual attack range)
 	projectile_count = 1  # Single slash
 	pierce_count = 999  # Hits all enemies in cone
+	multi_shot_delay = 0.05
 
 	# Use sword hitbox instead of default projectile
 	projectile_scene = preload("res://scenes/weapons/sword_hitbox.tscn")
+
+	super._ready()
 
 	print("Sword initialized: Attack range = %.0f, Base detection = %.0f (%.1fx), Speed-reactive enabled" % [weapon_range, weapon_range * base_detection_range, base_detection_range])
 

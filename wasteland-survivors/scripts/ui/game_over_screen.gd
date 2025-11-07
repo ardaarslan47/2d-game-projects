@@ -5,14 +5,12 @@ extends CanvasLayer
 
 # Onready variables
 @onready var time_label: Label = $CenterContainer/PanelContainer/VBoxContainer/StatsContainer/TimeLabel
-@onready var kills_label: Label = $CenterContainer/PanelContainer/VBoxContainer/StatsContainer/KillsLabel
 @onready var level_label: Label = $CenterContainer/PanelContainer/VBoxContainer/StatsContainer/LevelLabel
 
 # Public methods
-func show_game_over(time_survived: String, kills: int, level: int) -> void:
+func show_game_over(time_survived: String, level: int) -> void:
 	"""Display the game over screen with final stats."""
 	time_label.text = "Time Survived: %s" % time_survived
-	kills_label.text = "Enemies Killed: %d" % kills
 	level_label.text = "Level Reached: %d" % level
 	visible = true
 

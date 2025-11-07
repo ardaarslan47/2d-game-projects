@@ -1,0 +1,40 @@
+[gd_scene load_steps=4 format=3 uid="uid://caq7k3n5m8pxr"]
+
+[ext_resource type="Script" path="res://scripts/weapons/homing_missile_behavior.gd" id="1_homing"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_missile"]
+radius = 5.0
+
+[sub_resource type="Gradient" id="Gradient_thrust"]
+offsets = PackedFloat32Array(0, 0.4, 1)
+colors = PackedColorArray(0, 1, 0, 1, 0.5, 1, 0.5, 0.7, 0.7, 1, 0.7, 0)
+
+[node name="HomingMissileProjectile" type="Area2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_homing")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0, 1, 0, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_missile")
+
+[node name="ThrustTrail" type="CPUParticles2D" parent="."]
+amount = 30
+lifetime = 0.4
+preprocess = 0.2
+explosiveness = 0.2
+randomness = 0.3
+emission_shape = 1
+emission_sphere_radius = 3.0
+direction = Vector2(-1, 0)
+spread = 15.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 50.0
+initial_velocity_max = 100.0
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+color_ramp = SubResource("Gradient_thrust")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
