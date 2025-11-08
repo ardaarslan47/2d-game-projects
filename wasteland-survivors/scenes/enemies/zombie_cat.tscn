@@ -1,8 +1,8 @@
-[gd_scene load_steps=15 format=3 uid="uid://wrmgk17hm6e7"]
+[gd_scene load_steps=15 format=3]
 
-[ext_resource type="Script" uid="uid://bitnpijiqbcm3" path="res://scripts/enemies/enemy_zombie_cat.gd" id="1_zombie_cat"]
-[ext_resource type="Texture2D" uid="uid://pjt7ix2audv6" path="res://assets/characters/zombie/Cat_Grey.png" id="2_7vl2n"]
-[ext_resource type="Script" uid="uid://gavq3b4nid8t" path="res://scripts/components/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_zombie_cat.gd" id="1_zombie_cat"]
+[ext_resource type="Texture2D" path="res://assets/characters/zombie/Cat_Grey.png" id="2_7vl2n"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="2_health"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dteow"]
 atlas = ExtResource("2_7vl2n")

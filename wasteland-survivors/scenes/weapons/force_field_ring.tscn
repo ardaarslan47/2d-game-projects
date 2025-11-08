@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://ddey2qs2xt60"]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/force_field_ring.gd" id="1_ring"]
 

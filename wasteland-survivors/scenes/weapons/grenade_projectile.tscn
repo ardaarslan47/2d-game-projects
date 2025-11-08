@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://c5p8rak3n7rxm"]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/grenade_projectile.gd" id="1_grenade"]
 

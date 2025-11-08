@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://b3f7jy5m8k1pq"]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/laser_beam.gd" id="1_beam"]
 

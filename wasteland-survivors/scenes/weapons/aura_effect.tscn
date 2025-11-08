@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://d1nak7n3p2qxr"]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/aura_effect.gd" id="1_aura"]
 

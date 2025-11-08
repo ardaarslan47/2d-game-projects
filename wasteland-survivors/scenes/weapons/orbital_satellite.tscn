@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://c8r5n2q7k4xvt"]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/orbital_satellite.gd" id="1_orbital"]
 
