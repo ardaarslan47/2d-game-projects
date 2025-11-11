@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://b2srdtr5lgmxa" path="res://scripts/grid_system.gd" id="1_8615o"]
 
-[node name="GridSystem" type="Node2D"]
+[node name="GridSystem" type="Node2D" groups=["grid"]]
 script = ExtResource("1_8615o")

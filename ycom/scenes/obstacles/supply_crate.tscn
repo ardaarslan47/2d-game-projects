@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://cqh8y3n5x7r2m"]
+
+[ext_resource type="Script" path="res://scripts/obstacle.gd" id="1_m7wvj"]
+[ext_resource type="Texture2D" path="res://assets/obstacles/supply_crate.png" id="2_supply_crate"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_crate"]
+size = Vector2(64, 64)
+
+[node name="SupplyCrate" type="StaticBody2D"]
+script = ExtResource("1_m7wvj")
+blocks_movement = true
+provides_cover = true
+cover_bonus = 30
+destructible = true
+max_health = 50
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_supply_crate")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_crate")

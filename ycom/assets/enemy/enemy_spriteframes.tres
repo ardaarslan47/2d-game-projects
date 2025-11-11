@@ -1,0 +1,124 @@
+[gd_resource type="SpriteFrames" load_steps=25 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south/frame_000.png" id="1_s0"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south/frame_001.png" id="2_s1"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south/frame_002.png" id="3_s2"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south/frame_003.png" id="4_s3"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south/frame_004.png" id="5_s4"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south/frame_005.png" id="6_s5"]
+
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/west/frame_000.png" id="7_w0"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/west/frame_001.png" id="8_w1"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/west/frame_002.png" id="9_w2"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/west/frame_003.png" id="10_w3"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/west/frame_004.png" id="11_w4"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/west/frame_005.png" id="12_w5"]
+
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south-west/frame_000.png" id="13_sw0"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south-west/frame_001.png" id="14_sw1"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south-west/frame_002.png" id="15_sw2"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south-west/frame_003.png" id="16_sw3"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south-west/frame_004.png" id="17_sw4"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/south-west/frame_005.png" id="18_sw5"]
+
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/north-west/frame_000.png" id="19_nw0"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/north-west/frame_001.png" id="20_nw1"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/north-west/frame_002.png" id="21_nw2"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/north-west/frame_003.png" id="22_nw3"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/north-west/frame_004.png" id="23_nw4"]
+[ext_resource type="Texture2D" path="res://assets/enemy/animations/walking/north-west/frame_005.png" id="24_nw5"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_s0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_s1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_s2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_s3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_s4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_s5")
+}],
+"loop": true,
+"name": &"south",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("7_w0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_w1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_w2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_w3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_w4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_w5")
+}],
+"loop": true,
+"name": &"west",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_sw0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_sw1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_sw2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_sw3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_sw4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_sw5")
+}],
+"loop": true,
+"name": &"south-west",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("19_nw0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_nw1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_nw2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_nw3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_nw4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_nw5")
+}],
+"loop": true,
+"name": &"north-west",
+"speed": 5.0
+}]
