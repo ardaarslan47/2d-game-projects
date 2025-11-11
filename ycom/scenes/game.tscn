@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://crvi3rvlsk0fg"]
+
+[ext_resource type="Script" uid="uid://bvew0stsgagm4" path="res://scripts/game_manager.gd" id="1_yqjtg"]
+[ext_resource type="PackedScene" uid="uid://c31u46jm2c4sq" path="res://scenes/grid_system.tscn" id="2_lbhrr"]
+[ext_resource type="PackedScene" uid="uid://ct1tfx32t8yps" path="res://scenes/characters/player.tscn" id="2_lnu2h"]
+
+[node name="game" type="Node2D"]
+script = ExtResource("1_yqjtg")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="GridSystem" parent="." instance=ExtResource("2_lbhrr")]
+
+[node name="player" parent="." instance=ExtResource("2_lnu2h")]
